@@ -2,6 +2,7 @@ from espnff import League
 
 from testClass import Test
 from team import Team
+from result import Result
 
 import requests
 
@@ -16,19 +17,38 @@ years = [2013, 2014, 2015, 2016, 2017]
 
 ENDPOINT = "http://games.espn.com/ffl/api/v2/"
 
-def createSingleYearTeamMap():
-    teamIdMap = {}
+def generateTeamsByYear():
+    teamsByYears = []
     for year in years:
         path = "main-" + str(year) + ".json"
         data = json.load(open(path))
-
         leagueSettings = data["leaguesettings"]
+        teamsByYears.append(leagueSettings["teams"])
+    return teamsByYears
 
-        teams = leagueSettings["teams"]
+def generateResults():
+    results = []
+    for i, teamsInAYear in enumerate(generateTeamsByYear()):
+        for teamId in teamsInAYear:
+            team = teamsInAYear[teamId]
+            for scheduleItem in team["scheduleItems"]:
+                matchups = scheduleItem["matchups"]
+                if (len(matchups) != 1):
+                    raise Exception('Matchups are not 1')
+                matchup = matchups[0]
+                player1Id = matchup["homeTeamId"]
+                player1Score = matchup["homeTeamScores"][len(matchup["homeTeamScores"]) - 1]
+                player2Id = matchup["awayTeamId"]
+                player2Score = matchup["awayTeamScores"][len(matchup["awayTeamScores"]) - 1]
+                results.append(Result(player1Id, player1Score, player2Id, player2Score, years[i]))
+    return results
+
+def createTeamMap():
+    teamIdMap = {}
+    for teamsInAYear in generateTeamsByYear():
         # teams is map from int to team. int is team id
-
-        for teamId in teams:
-            team = teams[teamId]
+        for teamId in teamsInAYear:
+            team = teamsInAYear[teamId]
             owners = [owner for owner in team["owners"] if owner["primaryOwner"] == True] # WTF multi owner Alistair
             if (len(owners) != 1):
                 raise Exception('Owners are not 1')
@@ -39,10 +59,15 @@ def createSingleYearTeamMap():
     return teamIdMap
 
 
-teamIdMap = createSingleYearTeamMap()
+teamIdMap = createTeamMap()
+results = generateResults()
+
+
 for teamId in teamIdMap:
     print(teamIdMap[teamId])
 
+for result in results:
+    print(result)
 
     ## team is finally intresting
 
