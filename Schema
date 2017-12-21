@@ -1,0 +1,24 @@
+
+
+
+
+League {
+    yearOfPlay: YearOfPlay[]
+}
+
+
+YearOfPlay {
+    teams: Teams
+}
+
+Team {
+    id: number
+    name: string
+    results: result[]
+}
+
+Result {
+    opponentId: number
+    opponentScore: number
+    myScore: number
+}

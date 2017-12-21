@@ -1,8 +1,10 @@
 from espnff import League
 
 from testClass import Test
+from team import Team
 
 import requests
+
 import json
 
 
@@ -11,23 +13,36 @@ import json
 league_id = 1278861
 years = [2013, 2014, 2015, 2016, 2017]
 
-syears = [2017]
 
 ENDPOINT = "http://games.espn.com/ffl/api/v2/"
 
-for year in syears:
-    path = "main-" + str(year) + ".json"
-    data = json.load(open(path))
+def createSingleYearTeamMap():
+    teamIdMap = {}
+    for year in years:
+        path = "main-" + str(year) + ".json"
+        data = json.load(open(path))
 
-    leagueSettings = data["leaguesettings"]
+        leagueSettings = data["leaguesettings"]
 
-    teams = leagueSettings["teams"]
-    # teams is map from int to team. int is not useful
-    keys = list(teams.keys())
-    aTeamKey = keys[0]
-    print(aTeamKey)
+        teams = leagueSettings["teams"]
+        # teams is map from int to team. int is team id
 
-    team = teams[aTeamKey]
+        for teamId in teams:
+            team = teams[teamId]
+            owners = [owner for owner in team["owners"] if owner["primaryOwner"] == True] # WTF multi owner Alistair
+            if (len(owners) != 1):
+                raise Exception('Owners are not 1')
+            owner = owners[0]
+            name = owner["firstName"] + " " + owner["lastName"]
+            team = Team(teamId, name)
+            teamIdMap[teamId] = team
+    return teamIdMap
+
+
+teamIdMap = createSingleYearTeamMap()
+for teamId in teamIdMap:
+    print(teamIdMap[teamId])
+
 
     ## team is finally intresting
 
@@ -81,7 +96,7 @@ for year in syears:
         matchup = matchups[0]
         {
             "matchupTypeId": 0,
-            "awayTeamScores": [109.58],
+            "awayTeamScores": [109.58], => is an array for playoff match ups, can just take the last value for now
             "awayTeam": {
                 "waiverRank": 10,
                 "division": {
@@ -127,15 +142,15 @@ for year in syears:
     '''
 
     # one for each week played
-    scheduleItems = team["scheduleItems"]
-
-    scheduleItem = team["scheduleItems"][0]
-
-    matchups = scheduleItem["matchups"]
-
-    matchup = matchups[0]
-
-    print(matchup)
+    #scheduleItems = team["scheduleItems"]
+#
+    #scheduleItem = team["scheduleItems"][13]
+#
+    #matchups = scheduleItem["matchups"]
+#
+    #matchup = matchups[0]
+#
+    #print(matchup)
 
 
 
