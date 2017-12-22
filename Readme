@@ -1,7 +1,4 @@
 
-
-
-
 League {
     yearOfPlay: YearOfPlay[]
 }
@@ -22,3 +19,12 @@ Result {
     player2Id: number
     player2Score: number
 }
+
+
+Rest Endpoints:
+
+Main)
+    ENDPOINT = "http://games.espn.com/ffl/api/v2/"
+    params = { 'leagueId': self.league_id, 'seasonId': self.year}
+    r = requests.get('%sleagueSettings' % (ENDPOINT, ), params=params)
+    data = r.json()
