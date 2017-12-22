@@ -12,9 +12,8 @@ class TeamLocators:
                 if (len(owners) != 1):
                     raise Exception('Owners are not 1')
                 owner = owners[0]
-                name = owner["firstName"] + " " + owner["lastName"]
                 intTeamId = int(teamId)
-                team = Team(intTeamId, name)
+                team = Team(intTeamId, owner["firstName"], owner["lastName"])
                 self.teamIdMap[intTeamId] = team
 
     def getAllTeamIds(self):

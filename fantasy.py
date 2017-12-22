@@ -4,6 +4,7 @@ from simpleResult import SimpleResult
 from teamLocators import TeamLocators
 from dataReader import generateTeamsByYear
 from dataReader import years
+from leagueStats import LeagueStats
 
 def appendResultsForSingleYear(year, teamsInAYear, simpleResultMap):
     ## we are doubling counting right now
@@ -40,9 +41,7 @@ def generateSimpleResultMap(teamLocators):
 def main():
     teamLocators = TeamLocators(generateTeamsByYear())
     playerRecords = generateSimpleResultMap(teamLocators)
-    for playerRecord in playerRecords:
-        print(playerRecord.team.name)                    # Kevin Simons
-        print(playerRecord.getWinsPercent())             # 0.5733333333333334
-        print(playerRecord.getWinsPercentAgainstDerek()) # 0.16666666666666666
+    leagueStats = LeagueStats(playerRecords)
+    leagueStats.sortByAveragePoints()
 
 if __name__ == "__main__": main()

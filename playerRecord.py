@@ -5,37 +5,26 @@ class PlayerRecord:
         self.simpleResults = simpleResults
 
     def __str__(self):
-        a = self.team.__str__()
-        for simpleResult in self.simpleResults:
-            a = a + " " + simpleResult.__str__()
-        return a
+        return self.team.__str__() + " with results: " + str(len(self.simpleResults))
 
     def getTotalPointsScored(self):
-        total = 0
-        for simpleResult in self.simpleResults:
-            total = total + simpleResult.myPoints
-        return total
+        myPoints = map(lambda simpleResult: simpleResult.myPoints, self.simpleResults)
+        return sum(myPoints)
+
+    def getAveragePointsScored(self):
+        return self.getTotalPointsScored() / len(self.simpleResults)
 
     def getTotalWins(self):
-        wins = 0
-        for simpleResult in self.simpleResults:
-            if simpleResult.myPoints > simpleResult.opponentPoints:
-                wins = wins + 1
-        return wins
+        return len(self.getWinResultsFromResultList(self.simpleResults))
 
-    def getWinsAgainstPlayerId(self, opponentId):
-        wins = 0
-        for simpleResult in self.simpleResults:
-            if (simpleResult.myPoints > simpleResult.opponentPoints) & (opponentId == simpleResult.opponentId):
-                wins = wins + 1
-        return wins
+    def getWinResultsFromResultList(self, results):
+        return list(filter(lambda simpleResult: simpleResult.myPoints > simpleResult.opponentPoints, results))
 
-    def getGamesAgainstPlayerId(self, opponentId):
-        games = 0
-        for simpleResult in self.simpleResults:
-            if opponentId == simpleResult.opponentId:
-                games = games + 1
-        return games
+    def getResultsAgainstPlayerId(self, opponentId):
+        return self.getResultsWithFilter(lambda simpleResult: opponentId == simpleResult.opponentId)
+
+    def getResultsWithFilter(self, filter):
+        return [simpleResult for simpleResult in self.simpleResults if filter(simpleResult)]
 
     def getWinsPercent(self):
         return self.getTotalWins() / len(self.simpleResults)
@@ -44,8 +33,9 @@ class PlayerRecord:
         return self.getWinsPercentAgainstId(1)
 
     def getWinsPercentAgainstId(self, id):
-        gamesAgainstPlayer = self.getGamesAgainstPlayerId(id)
-        if gamesAgainstPlayer == 0:
+        resultsAgainstPlayerId = self.getResultsAgainstPlayerId(id)
+        numberOfGamesAgainstPlayer = len(resultsAgainstPlayerId)
+        if numberOfGamesAgainstPlayer == 0:
             return 1
-        winsAgainstPlayerId = self.getWinsAgainstPlayerId(id)
-        return winsAgainstPlayerId / gamesAgainstPlayer
+        winResultsAgainstPlayerId = self.getWinResultsFromResultList(resultsAgainstPlayerId)
+        return len(winResultsAgainstPlayerId) / numberOfGamesAgainstPlayer
