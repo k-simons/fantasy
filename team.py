@@ -5,4 +5,4 @@ class Team:
         self.name = name
 
     def __str__(self):
-        return "id: " + self.id + ", name: " + self.name
+        return "id: " + str(self.id) + ", name: " + self.name

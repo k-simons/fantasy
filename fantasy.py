@@ -1,8 +1,7 @@
-from espnff import League
 
-from testClass import Test
+from playerRecord import PlayerRecord
 from team import Team
-from result import Result
+from simpleResult import SimpleResult
 
 import requests
 
@@ -20,28 +19,39 @@ ENDPOINT = "http://games.espn.com/ffl/api/v2/"
 def generateTeamsByYear():
     teamsByYears = []
     for year in years:
-        path = "main-" + str(year) + ".json"
+        path = "data/main-" + str(year) + ".json"
         data = json.load(open(path))
         leagueSettings = data["leaguesettings"]
         teamsByYears.append(leagueSettings["teams"])
     return teamsByYears
 
-def generateResults():
-    results = []
+def appendResultsForSingleYear(year, teamsInAYear, simpleResultMap):
+    ## we are doubling counting right now
+    seenResults = {}
+    for teamId in teamsInAYear:
+        team = teamsInAYear[teamId]
+        for i, scheduleItem in enumerate(team["scheduleItems"]): ## happens every week
+            matchups = scheduleItem["matchups"]
+            if (len(matchups) != 1):   # no idea why this is an array, error if its ever not 1
+                raise Exception('Matchups are not 1')
+            matchup = matchups[0]
+            player1Id = matchup["homeTeamId"]
+            player1Score = matchup["homeTeamScores"][len(matchup["homeTeamScores"]) - 1]
+            player2Id = matchup["awayTeamId"]
+            player2Score = matchup["awayTeamScores"][len(matchup["awayTeamScores"]) - 1]
+            seenKey = str(i) + ":" + str(player1Id)
+            if seenKey not in seenResults:
+                seenResults[seenKey] = True
+                simpleResultMap[player1Id].append(SimpleResult(player1Score, player2Score, player2Id))
+                simpleResultMap[player2Id].append(SimpleResult(player2Score, player1Score, player1Id))
+
+def generateSimpleResultMap(teamIdMap):
+    simpleResultMap = {}
+    for teamId in teamIdMap:
+        simpleResultMap[teamId] = []
     for i, teamsInAYear in enumerate(generateTeamsByYear()):
-        for teamId in teamsInAYear:
-            team = teamsInAYear[teamId]
-            for scheduleItem in team["scheduleItems"]:
-                matchups = scheduleItem["matchups"]
-                if (len(matchups) != 1):
-                    raise Exception('Matchups are not 1')
-                matchup = matchups[0]
-                player1Id = matchup["homeTeamId"]
-                player1Score = matchup["homeTeamScores"][len(matchup["homeTeamScores"]) - 1]
-                player2Id = matchup["awayTeamId"]
-                player2Score = matchup["awayTeamScores"][len(matchup["awayTeamScores"]) - 1]
-                results.append(Result(player1Id, player1Score, player2Id, player2Score, years[i]))
-    return results
+        appendResultsForSingleYear(years[i], teamsInAYear, simpleResultMap)
+    return simpleResultMap
 
 def createTeamMap():
     teamIdMap = {}
@@ -54,24 +64,29 @@ def createTeamMap():
                 raise Exception('Owners are not 1')
             owner = owners[0]
             name = owner["firstName"] + " " + owner["lastName"]
-            team = Team(teamId, name)
-            teamIdMap[teamId] = team
+            intTeamId = int(teamId)
+            team = Team(intTeamId, name)
+            teamIdMap[intTeamId] = team
     return teamIdMap
 
 
 teamIdMap = createTeamMap()
-results = generateResults()
 
+simpleResultMap = generateSimpleResultMap(teamIdMap)
 
-for teamId in teamIdMap:
-    print(teamIdMap[teamId])
+playerRecords = []
 
-for result in results:
-    print(result)
+for teamId in simpleResultMap:
+    print(len(simpleResultMap[teamId]))
+    playerRecords.append(PlayerRecord(teamIdMap[teamId], simpleResultMap[teamId]))
 
+for playerRecord in playerRecords:
+    print(playerRecord.team.name)                    # Kevin Simons
+    print(playerRecord.team.id)                      # 2
+    print(playerRecord.getWinsPercent())             # 0.5733333333333334
+    print(playerRecord.getWinsPercentAgainstDerek()) # 0.16666666666666666
     ## team is finally intresting
-
-    '''
+'''
     owners ->
         [{
             'lastName': 'Zhou',
