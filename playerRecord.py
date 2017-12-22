@@ -44,6 +44,8 @@ class PlayerRecord:
         return self.getWinsPercentAgainstId(1)
 
     def getWinsPercentAgainstId(self, id):
-        if (self.team.id == id ):
+        gamesAgainstPlayer = self.getGamesAgainstPlayerId(id)
+        if gamesAgainstPlayer == 0:
             return 1
-        return self.getWinsAgainstPlayerId(id) / self.getGamesAgainstPlayerId(id)
+        winsAgainstPlayerId = self.getWinsAgainstPlayerId(id)
+        return winsAgainstPlayerId / gamesAgainstPlayer
