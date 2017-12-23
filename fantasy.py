@@ -21,6 +21,9 @@ def appendResultsForSingleYear(year, teamsInAYear, simpleResultMap):
             player2Id = matchup["awayTeamId"]
             player2Score = matchup["awayTeamScores"][len(matchup["awayTeamScores"]) - 1]
             seenKey = str(i) + ":" + str(player1Id)
+            # Only add games that have been played
+            if (player1Score == 0) & (player2Score == 0):
+                continue
             if seenKey not in seenResults:
                 seenResults[seenKey] = True
                 simpleResultMap[player1Id].append(SimpleResult(player1Score, player2Score, player2Id))
@@ -41,7 +44,14 @@ def generateSimpleResultMap(teamLocators):
 def main():
     teamLocators = TeamLocators(generateTeamsByYear())
     playerRecords = generateSimpleResultMap(teamLocators)
-    leagueStats = LeagueStats(playerRecords)
-    leagueStats.sortByAveragePoints()
+    for playerRecord in playerRecords:
+        playerRecord.printPlayerProfile(teamLocators)
+        break
+
+    #leagueStats = LeagueStats(playerRecords)
+    #leagueStats.sortByAveragePoints()
+    #leagueStats.sortByAveragePointsByOpponent()
+    #leagueStats.sortByTotalWins()
+    #leagueStats.sortWinsPercent()
 
 if __name__ == "__main__": main()
