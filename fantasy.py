@@ -44,14 +44,14 @@ def generateSimpleResultMap(teamLocators):
 def main():
     teamLocators = TeamLocators(generateTeamsByYear())
     playerRecords = generateSimpleResultMap(teamLocators)
+    playersToRunOn = {} #"Kevin": True, "Derek": True}
     for playerRecord in playerRecords:
-        playerRecord.printPlayerProfile(teamLocators)
-        break
+        if playerRecord.team.firstName in playersToRunOn:
+            playerRecord.printPlayerProfile(teamLocators)
 
-    #leagueStats = LeagueStats(playerRecords)
-    #leagueStats.sortByAveragePoints()
-    #leagueStats.sortByAveragePointsByOpponent()
-    #leagueStats.sortByTotalWins()
-    #leagueStats.sortWinsPercent()
+
+    leagueStats = LeagueStats(playerRecords)
+    leagueStats.sortByAveragePoints()
+    leagueStats.sortWinsPercent()
 
 if __name__ == "__main__": main()
